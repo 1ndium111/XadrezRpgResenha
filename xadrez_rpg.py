@@ -33,7 +33,8 @@ NOMES_REIS = [
     "Arthur", "Charles", "Leonidas", "Alexandre", "Luís", "Ricardo", "Pedro", 
     "Henrique", "Filipe", "Augusto", "Nero", "Constantin", "Sigismund", "Alaric", 
     "Ragnar", "Bjorn", "Valerius", "Tiberius", "Maximilian", "Vlad", "Ivan", 
-    "Casimir", "Gustav", "Erik", "Aethelstan", "Cyrus", "Darius", "Trajan", "Justin"
+    "Casimir", "Gustav", "Erik", "Aethelstan", "Cyrus", "Darius", "Trajan", "Justin",
+    "Roger"
 ]
 
 NOMES_RAINHAS = [
@@ -52,7 +53,8 @@ NOMES_COMUNS = [
     "Dante", "Enzo", "Clara", "Lorenzo", "Valentina", "Heitor", "Melissa", "Pietro", 
     "Yasmin", "Gael", "Giovanna", "Bernardo", "Nicole", "Thales", "Elena", "Arthur_Jr",
     "Vitor", "Heloisa", "Samuel", "Rebeca", "Caio", "Lívia", "Francisco", "Aline",
-    "Breno", "Cibele", "Douglas", "Elisa", "Fabrício", "Giovana", "Humberto", "Ísis"
+    "Breno", "Cibele", "Douglas", "Elisa", "Fabrício", "Giovana", "Humberto", "Ísis", "Pedro A.",
+    "Neymar Jr.", "Chris", "Neymar Sr.", "Assassino", "Vampeta", "LinguiçoMan"
 ]
 
 FALAS_MOVER = [
