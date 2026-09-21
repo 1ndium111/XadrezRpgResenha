@@ -45,16 +45,16 @@ NOMES_RAINHAS = [
 ]
 
 NOMES_COMUNS = [
-    "João", "José", "Carlos", "Ana", "Julia", "Marcos", "Pedro_C", "Felipe_C", 
+    "João", "José", "Carlos", "Ana", "Julia", "Marcos", "Pedrito", "Felipito", 
     "Joana", "Sofia", "Lucas", "Miguel", "Lara", "Gabriel", "Beatriz", "Mateus", 
     "Laura", "Rafael", "Alice", "Bruno", "Camila", "Diego", "Eduarda", "Fernando", 
     "Gabriela", "Igor", "Juliana", "Leonardo", "Mariana", "Tiago", "Vicente", 
     "Otávio", "Marcelo", "Lorena", "Teresa", "Valéria", "Renato", "Sérgio", "Amanda",
     "Dante", "Enzo", "Clara", "Lorenzo", "Valentina", "Heitor", "Melissa", "Pietro", 
-    "Yasmin", "Gael", "Giovanna", "Bernardo", "Nicole", "Thales", "Elena", "Arthur_Jr",
+    "Yasmin", "Gael", "Giovanna", "Bernardo", "Nicole", "Thales", "Elena", "Arthur Jr",
     "Vitor", "Heloisa", "Samuel", "Rebeca", "Caio", "Lívia", "Francisco", "Aline",
-    "Breno", "Cibele", "Douglas", "Elisa", "Fabrício", "Giovana", "Humberto", "Ísis", "Pedro A.",
-    "Neymar Jr.", "Chris", "Neymar Sr.", "Assassino", "Vampeta", "LinguiçoMan"
+    "Breno", "Cibele", "Douglas", "Elisa", "Fabrício", "Giovana", "Humberto", "Ísis",
+    "Chris", "Pedro A.", "Neymar Jr.", "Neymar Sr.", "LinguiçoMan"
 ]
 
 FALAS_MOVER = [
@@ -266,6 +266,7 @@ class XadrezRPG:
         self.log_text.tag_config('uniao', foreground='#006400')
         self.log_text.tag_config('casamento_aliado', foreground='#D3D3D3')
         self.log_text.tag_config('divorcio', foreground='#A9A9A9')
+        self.log_text.tag_config('promocao', foreground='#FFD700')
 
         self.iniciar_estado_jogo()
 
@@ -279,7 +280,7 @@ class XadrezRPG:
     def mostrar_legenda_cores(self):
         janela_legenda = tk.Toplevel(self.root)
         janela_legenda.title("Legenda de Cores do Chat")
-        janela_legenda.geometry("440x300")
+        janela_legenda.geometry("440x320")
         janela_legenda.config(bg="#1e1e1e")
         
         tk.Label(janela_legenda, text="Significado das Cores do Chat", font=("Arial", 14, "bold"), bg="#1e1e1e", fg="white").pack(pady=10)
@@ -290,7 +291,8 @@ class XadrezRPG:
             ("#00008B", "Azul Escuro", "Solidão / Depressão da peça"),
             ("#006400", "Verde Escuro", "União de consolo (mesmo time)"),
             ("#D3D3D3", "Cinza Claro", "Casamento entre aliados"),
-            ("#A9A9A9", "Cinza Escuro", "Separação / Divórcio")
+            ("#A9A9A9", "Cinza Escuro", "Separação / Divórcio"),
+            ("#FFD700", "Dourado", "Promoção de peão")
         ]
         
         for hex_code, nome_cor, desc in legenda_dados:
@@ -476,36 +478,8 @@ class XadrezRPG:
 
         return False
 
-    def square_attacked(self, l, c, attacker_cor, board):
-        for r in range(8):
-            for col in range(8):
-                p = board[r][col]
-                if p and p.cor == attacker_cor:
-                    if self.movimento_geometrico_valido(p, r, col, l, c, board):
-                        return True
-        return False
-
-    def rei_em_check(self, cor, board=None):
-        if board is None:
-            board = self.tabuleiro
-        kr, kc = None, None
-        for r in range(8):
-            for col in range(8):
-                p = board[r][col]
-                if p and p.cor == cor and p.tipo == 'rei':
-                    kr, kc = r, col
-                    break
-            if kr is not None: break
-        if kr is None: return False
-        oponente = 'preto' if cor == 'branco' else 'branco'
-        return self.square_attacked(kr, kc, oponente, board)
-
     def movimento_legal(self, peca, l_orig, c_orig, l_dest, c_dest):
-        # Sem restrição de xeque/proteção de rei
         return self.movimento_geometrico_valido(peca, l_orig, c_orig, l_dest, c_dest)
-
-    def tem_qualquer_movimento_legal(self, cor):
-        return True
 
     def trigger_bongcloud_laugh(self, cor_rei):
         nome_j = self.nomes_jogadores[cor_rei]
@@ -521,6 +495,41 @@ class XadrezRPG:
         for p_rindo in amostra:
             fala_risada = random.choice(risos)
             self.registrar_log(f"🤭 {p_rindo.nome} ri da cara de {nome_j}: '{fala_risada}'", tag='casamento')
+
+    def promover_peao(self, peca, l, c):
+        escolha_container = {'tipo': 'rainha'}
+        
+        janela = tk.Toplevel(self.root)
+        janela.title("Promoção de Peão")
+        janela.geometry("400x160")
+        janela.config(bg="#1e1e1e")
+        janela.transient(self.root)
+        janela.grab_set()
+        
+        nome_dono = self.nomes_jogadores[peca.cor]
+        tk.Label(janela, text=f"👑 Promoção! {peca.nome} alcançou o fim da linha!", font=("Arial", 11, "bold"), fg="#ffcc00", bg="#1e1e1e").pack(pady=10)
+        
+        frame_botoes = tk.Frame(janela, bg="#1e1e1e")
+        frame_botoes.pack(pady=5)
+        
+        def escolher(tipo_t):
+            escolha_container['tipo'] = tipo_t
+            janela.destroy()
+            
+        opcoes = [('Rainha ♕', 'rainha'), ('Torre ♖', 'torre'), ('Bispo ♗', 'bispo'), ('Cavalo ♘', 'cavalo')]
+        for label_t, tipo_t in opcoes:
+            btn = tk.Button(frame_botoes, text=label_t, font=("Arial", 10, "bold"), bg="#333333", fg="white",
+                            activebackground="#555555", activeforeground="white", command=lambda t=tipo_t: escolher(t))
+            btn.pack(side=tk.LEFT, padx=6, ipadx=6, ipady=4)
+            
+        self.root.wait_window(janela)
+        
+        novo_tipo = escolha_container['tipo']
+        novo_nome = sortear_nome_unico(novo_tipo)
+        peca.tipo = novo_tipo
+        peca.nome = f"{novo_nome}"
+        self.registrar_log(f"👑 [PROMOÇÃO] Peão de {nome_dono} transcendeu a patente para {novo_tipo.upper()}! Nasce {peca.nome}!", tag='promocao')
+        self.desenhar_tabuleiro()
 
     def clicar(self, event):
         if not self.jogo_ativo: return
@@ -567,11 +576,18 @@ class XadrezRPG:
                 self.tabuleiro[l][c] = self.selecionada
                 self.tabuleiro[linha_origem][col_origem] = None
                 
+                peca_movida = self.selecionada
+                l_destino, c_destino = l, c
+                
                 if is_bongcloud:
-                    self.trigger_bongcloud_laugh(self.selecionada.cor)
+                    self.trigger_bongcloud_laugh(peca_movida.cor)
 
                 self.selecionada = None
                 self.pos_selecionada = None
+                
+                # Checar promoção de peão
+                if peca_movida.tipo == 'peao' and ((peca_movida.cor == 'branco' and l_destino == 0) or (peca_movida.cor == 'preto' and l_destino == 7)):
+                    self.promover_peao(peca_movida, l_destino, c_destino)
                 
                 self.processar_fim_turno()
             else:
@@ -811,7 +827,6 @@ class XadrezRPG:
         self.checar_romance()
         self.processar_solidao_e_casamento()
         
-        # Alternância livre de turno sem checar xeque-mate
         self.turno = 'preto' if self.turno == 'branco' else 'branco'
         self.desenhar_tabuleiro()
 
