@@ -214,12 +214,11 @@ class Peca:
 class XadrezRPG:
     def __init__(self, root):
         self.root = root
-        self.root.withdraw()  # Oculta a janela principal para evitar conflito de Tcl nos diálogos modais
+        self.root.withdraw()
         self.root.title("Xadrez RPG Dark: Guerra, Sangue e Amor")
         self.root.geometry("1300x800")
         self.root.config(bg="#1e1e1e")
         
-        # Obter nomes dos jogadores antes de exibir o tabuleiro
         nome_b = simpledialog.askstring("Jogador Branco", "Nome do Jogador das Brancas:", initialvalue="Branco", parent=self.root)
         nome_b = nome_b if nome_b else "Brancas"
         
@@ -227,12 +226,10 @@ class XadrezRPG:
         nome_p = nome_p if nome_p else "Pretas"
         self.nomes_jogadores = {'branco': nome_b, 'preto': nome_p}
         
-        self.root.deiconify()  # Exibe a janela principal após a coleta dos nomes
+        self.root.deiconify()
         
-        # Menu superior
         self.criar_menu()
         
-        # Interface
         self.tamanho_casa = 85
         self.canvas = tk.Canvas(root, width=self.tamanho_casa*8, height=self.tamanho_casa*8, bg="#2b2b2b", highlightthickness=0)
         self.canvas.pack(side=tk.LEFT, padx=30, pady=30)
@@ -241,7 +238,6 @@ class XadrezRPG:
         self.painel_lateral = tk.Frame(root, bg="#1e1e1e")
         self.painel_lateral.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=20, pady=30)
 
-        # Exibir nomes dos jogadores no painel
         tk.Label(self.painel_lateral, text=f"⚪ {self.nomes_jogadores['branco']}  vs  ⚫ {self.nomes_jogadores['preto']}", 
                  font=("Arial", 11, "bold"), bg="#2d2d2d", fg="#ffcc00", relief="solid", bd=1).pack(fill=tk.X, pady=(0, 10), ipady=5)
 
@@ -262,15 +258,13 @@ class XadrezRPG:
         self.log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.scroll.config(command=self.log_text.yview)
 
-        # Configurar tags de cor do log
-        self.log_text.tag_config('amor', foreground='#90EE90')              # Verde claro
-        self.log_text.tag_config('casamento', foreground='#FF69B4')          # Rosa
-        self.log_text.tag_config('solidao', foreground='#00008B')            # Azul escuro
-        self.log_text.tag_config('uniao', foreground='#006400')              # Verde escuro
-        self.log_text.tag_config('casamento_aliado', foreground='#D3D3D3')   # Cinza claro
-        self.log_text.tag_config('divorcio', foreground='#A9A9A9')           # Cinza escuro
+        self.log_text.tag_config('amor', foreground='#90EE90')
+        self.log_text.tag_config('casamento', foreground='#FF69B4')
+        self.log_text.tag_config('solidao', foreground='#00008B')
+        self.log_text.tag_config('uniao', foreground='#006400')
+        self.log_text.tag_config('casamento_aliado', foreground='#D3D3D3')
+        self.log_text.tag_config('divorcio', foreground='#A9A9A9')
 
-        # Iniciar Estado
         self.iniciar_estado_jogo()
 
     def criar_menu(self):
@@ -317,7 +311,6 @@ class XadrezRPG:
         self.proximidade_romance = {}
         self.turnos_casamento_proximo = {}
         
-        # Contadores globais de mecânicas
         self.turno_global = 0
         self.divorce_block = 0
         self.cooldown_solidao = 0
@@ -325,7 +318,7 @@ class XadrezRPG:
         
         self.inicializar_tabuleiro()
         self.desenhar_tabuleiro()
-        self.registrar_log(f"🛡️ Batalha Iniciada: {self.nomes_jogadores['branco']} (Brancas) vs {self.nomes_jogadores['preto']} (Pretas)!\nRegras clássicas e Modo Escuro ativas.")
+        self.registrar_log(f"🛡️ Batalha Iniciada: {self.nomes_jogadores['branco']} (Brancas) vs {self.nomes_jogadores['preto']} (Pretas)!\nModo Caos / Sem Xeque-Mate ativo.")
 
     def resetar_jogo(self):
         self.log_text.delete('1.0', tk.END)
@@ -343,7 +336,6 @@ class XadrezRPG:
     def inicializar_tabuleiro(self):
         ordem = ['torre', 'cavalo', 'bispo', 'rainha', 'rei', 'bispo', 'cavalo', 'torre']
         for c in range(8):
-            # Pretos
             tipo_p = ordem[c]
             peca_p = Peca(tipo_p, 'preto', sortear_nome_unico(tipo_p))
             self.tabuleiro[0][c] = peca_p
@@ -353,7 +345,6 @@ class XadrezRPG:
             self.tabuleiro[1][c] = peao_p
             self.pecas_vivas.append(peao_p)
 
-            # Brancos
             peao_b = Peca('peao', 'branco', sortear_nome_unico('peao'))
             self.tabuleiro[6][c] = peao_b
             self.pecas_vivas.append(peao_b)
@@ -508,26 +499,11 @@ class XadrezRPG:
         return self.square_attacked(kr, kc, oponente, board)
 
     def movimento_legal(self, peca, l_orig, c_orig, l_dest, c_dest):
-        if not self.movimento_geometrico_valido(peca, l_orig, c_orig, l_dest, c_dest):
-            return False
-        temp_dest = self.tabuleiro[l_dest][c_dest]
-        self.tabuleiro[l_dest][c_dest] = peca
-        self.tabuleiro[l_orig][c_orig] = None
-        em_check = self.rei_em_check(peca.cor)
-        self.tabuleiro[l_orig][c_orig] = peca
-        self.tabuleiro[l_dest][c_dest] = temp_dest
-        return not em_check
+        # Sem restrição de xeque/proteção de rei
+        return self.movimento_geometrico_valido(peca, l_orig, c_orig, l_dest, c_dest)
 
     def tem_qualquer_movimento_legal(self, cor):
-        for r in range(8):
-            for c in range(8):
-                p = self.tabuleiro[r][c]
-                if p and p.cor == cor:
-                    for dr in range(8):
-                        for dc in range(8):
-                            if self.movimento_legal(p, r, c, dr, dc):
-                                return True
-        return False
+        return True
 
     def trigger_bongcloud_laugh(self, cor_rei):
         nome_j = self.nomes_jogadores[cor_rei]
@@ -597,7 +573,7 @@ class XadrezRPG:
                 
                 self.processar_fim_turno()
             else:
-                self.registrar_log(f"⚠️ {self.selecionada.nome} tropeça ou rei ficaria exposto... Movimento inválido!")
+                self.registrar_log(f"⚠️ {self.selecionada.nome} tropeça... Movimento inválido!")
 
     def verificar_temor(self, peca):
         inimigos = [p for p in self.pecas_vivas if p.cor != peca.cor]
@@ -833,23 +809,8 @@ class XadrezRPG:
         self.checar_romance()
         self.processar_solidao_e_casamento()
         
-        proximo_turno = 'preto' if self.turno == 'branco' else 'branco'
-        
-        if not self.tem_qualquer_movimento_legal(proximo_turno):
-            if self.rei_em_check(proximo_turno):
-                self.jogo_ativo = False
-                vencedor_cor = "Brancas" if self.turno == 'branco' else "Pretas"
-                vencedor_nome = self.nomes_jogadores[self.turno]
-                msg = f"♟️✨ XEQUE-MATE! O Rei de {self.nomes_jogadores[proximo_turno]} não pode escapar!\n{vencedor_nome} ({vencedor_cor}) vence a guerra por Xeque-Mate!"
-                self.registrar_log("="*40)
-                self.registrar_log(msg.upper())
-                self.registrar_log("="*40)
-                messagebox.showinfo("Fim de Jogo", msg)
-                return
-            else:
-                self.registrar_log(f"⚠️ Afogamento/Empate técnico para as peças {proximo_turno}!")
-
-        self.turno = proximo_turno
+        # Alternância livre de turno sem checar xeque-mate
+        self.turno = 'preto' if self.turno == 'branco' else 'branco'
         self.desenhar_tabuleiro()
 
 if __name__ == "__main__":
